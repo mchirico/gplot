@@ -1,6 +1,7 @@
 package plot
 
 import (
+	"fmt"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
@@ -14,11 +15,24 @@ func Convert(v []float64) plotter.Values {
 	return c
 }
 
+func Bar(group plotter.Values, w vg.Length, i int) *plotter.BarChart {
+	bar, err := plotter.NewBarChart(group, w)
+	if err != nil {
+		panic(err)
+	}
+	bar.LineStyle.Width = vg.Length(0)
+	bar.Color = plotutil.Color(i)
+	bar.Offset = -w
+	return bar
+}
+
 func Draw(v ...[]float64) {
 
-	groupA := Convert(v[0])
-	groupB := Convert(v[1])
-	groupC := Convert(v[2])
+	group := []plotter.Values{}
+	for i,_ := range v {
+		group = append(group,v[i])
+	}
+
 
 	p, err := plot.New()
 	if err != nil {
@@ -32,35 +46,21 @@ func Draw(v ...[]float64) {
 
 	w := vg.Points(20)
 
-	barsA, err := plotter.NewBarChart(groupA, w)
-	if err != nil {
-		panic(err)
-	}
-	barsA.LineStyle.Width = vg.Length(0)
-	barsA.Color = plotutil.Color(0)
-	barsA.Offset = -w
+	bars := []plot.Plotter{}
 
-	barsB, err := plotter.NewBarChart(groupB, w)
-	if err != nil {
-		panic(err)
+	for i,_ := range group {
+		bars = append(bars,Bar(group[i],w,i ))
 	}
-	barsB.LineStyle.Width = vg.Length(0)
-	barsB.Color = plotutil.Color(1)
 
-	barsC, err := plotter.NewBarChart(groupC, w)
-	if err != nil {
-		panic(err)
+	p.Add(bars...)
+	names := []string{}
+	for i,_ := range bars {
+		names = append(names,fmt.Sprintf("Group %d",i) )
+		p.Legend.Add(names[i], bars[i].(plot.Thumbnailer))
 	}
-	barsC.LineStyle.Width = vg.Length(0)
-	barsC.Color = plotutil.Color(2)
-	barsC.Offset = w
 
-	p.Add(barsA, barsB, barsC)
-	p.Legend.Add("Group A", barsA)
-	p.Legend.Add("Group B", barsB)
-	p.Legend.Add("Group C", barsC)
 	p.Legend.Top = true
-	p.NominalX("One", "Two", "Three", "Four", "Five")
+	p.NominalX(names...)
 
 	if err := p.Save(5*vg.Inch, 3*vg.Inch, "barchart.png"); err != nil {
 		panic(err)
