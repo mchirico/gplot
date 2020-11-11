@@ -26,6 +26,17 @@ func Bar(group plotter.Values, w vg.Length, i int) *plotter.BarChart {
 	return bar
 }
 
+func CalcOffset(n int)  []vg.Length {
+	spread := vg.Length(45)
+	steps := spread/vg.Length(n)
+
+	v := []vg.Length{}
+	for  i := -spread;i <= spread; i+= steps {
+		v = append(v,i)
+	}
+	return v
+}
+
 func Draw(v ...[]float64) {
 
 	group := []plotter.Values{}
@@ -39,12 +50,12 @@ func Draw(v ...[]float64) {
 		panic(err)
 	}
 
-	p.BackgroundColor = color.RGBA{R: 12, B: 28, G: 50, A: 55}
+	p.BackgroundColor = color.RGBA{R: 25, B: 20, G: 25, A: 40}
 
 	p.Title.Text = "Bar chart"
 	p.Y.Label.Text = "Heights"
 
-	offset := []vg.Length{-20,-10,0,10}
+	offset := CalcOffset(len(group))
 	bars := []plot.Plotter{}
 
 	for i,_ := range group {
@@ -54,14 +65,16 @@ func Draw(v ...[]float64) {
 
 	p.Add(bars...)
 	names := []string{}
+	names2 := []string{}
 	for i,_ := range bars {
 		names = append(names,fmt.Sprintf("Group %d",i) )
+		names2 = append(names2,fmt.Sprintf("Set %d",i) )
 		p.Legend.Add(names[i], bars[i].(plot.Thumbnailer))
 	}
 
 
 	p.Legend.Top = true
-	p.NominalX(names...)
+	p.NominalX(names2...)
 
 	if err := p.Save(5*vg.Inch, 3*vg.Inch, "barchart.png"); err != nil {
 		panic(err)
