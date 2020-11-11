@@ -27,11 +27,11 @@ func Bar(group plotter.Values, w vg.Length, i int) *plotter.BarChart {
 }
 
 func CalcOffset(n int)  []vg.Length {
-	spread := vg.Length(45)
+	spread := vg.Length(25)
 	steps := spread/vg.Length(n)
 
 	v := []vg.Length{}
-	for  i := -spread;i <= spread; i+= steps {
+	for  i := -spread;i <= spread; i+= 2*steps {
 		v = append(v,i)
 	}
 	return v
